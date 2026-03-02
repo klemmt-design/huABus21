@@ -10,45 +10,40 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $rootDir = Split-Path -Parent $scriptDir  # Ein Level höher (Root)
 
 # ===== CHECK VIRTUAL ENVIRONMENT =====
-if (-not $env:VIRTUAL_ENV) {
-    Write-Host "⚠️  Virtual environment not activated. Activating..." -ForegroundColor Yellow
-
-    if (Test-Path "$rootDir\venv\Scripts\Activate.ps1") {
-        & "$rootDir\venv\Scripts\Activate.ps1"
-        Write-Host "✅ Virtual environment activated" -ForegroundColor Green
-    }
-    elseif (Test-Path "$rootDir\.venv\Scripts\Activate.ps1") {
-        & "$rootDir\.venv\Scripts\Activate.ps1"
-        Write-Host "✅ Virtual environment activated" -ForegroundColor Green
-    }
-    else {
-        Write-Host "❌ No virtual environment found (venv or .venv)!" -ForegroundColor Red
-        Write-Host "   Run: python -m venv venv" -ForegroundColor Yellow
-        exit 1
-    }
-    Write-Host ""
+uv sync --quiet
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "❌ uv sync failed!" -ForegroundColor Red
+    exit 1
 }
 
 # ===== TEST MODE =====
 if ($Test) {
     Write-Host "🧪 Running tests..." -ForegroundColor Yellow
 
+    # uv sync vor Tests (reproduzierbar)
+    Write-Host "🔄 Syncing dependencies..." -ForegroundColor Cyan
+    uv sync --all-extras
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "❌ Dependency sync failed!" -ForegroundColor Red
+        exit 1
+    }
+
     # Wechsel ins Root-Verzeichnis für pytest
     Push-Location $rootDir
 
     if ($Coverage) {
-        pytest tests/ -v --cov=huawei_solar_modbus_mqtt/bridge --cov-report=html
+        uv run pytest -v --cov=huawei_solar_modbus_mqtt/bridge --cov-report=html
         if ($LASTEXITCODE -eq 0) {
             Write-Host "✅ All tests passed!" -ForegroundColor Green
             Write-Host "📊 Opening coverage report..." -ForegroundColor Cyan
-            Start-Process htmlcov/index.html  # ← Hier geändert
+            Start-Process htmlcov/index.html
         }
         else {
             Write-Host "❌ Tests failed!" -ForegroundColor Red
         }
     }
     else {
-        pytest tests/ -v
+        uv run pytest tests -v
         if ($LASTEXITCODE -eq 0) {
             Write-Host "✅ All tests passed!" -ForegroundColor Green
         }
@@ -60,6 +55,7 @@ if ($Test) {
     Pop-Location
     exit $LASTEXITCODE
 }
+
 
 # ===== NORMAL MODE =====
 Write-Host "========================================================================" -ForegroundColor Cyan
@@ -97,11 +93,11 @@ Write-Host ">> System Info:" -ForegroundColor Blue
 $pythonVersion = python --version 2>&1 | Select-String -Pattern "Python (\d+\.\d+\.\d+)" | ForEach-Object { $_.Matches.Groups[1].Value }
 Write-Host "   - Python: $pythonVersion" -ForegroundColor White
 
-# Get version from __version__.py
+# Get version from version.py
 try {
-    $versionPath = Join-Path $rootDir "huawei_solar_modbus_mqtt\bridge\__version__.py"
+    $versionPath = Join-Path $rootDir "huawei_solar_modbus_mqtt\bridge\version.py"
     if (Test-Path $versionPath) {
-        $versionContent = Get-Content $versionPath | Select-String '__version__\s*=\s*"([^"]+)"'
+        $versionContent = Get-Content $versionPath | Select-String 'version\s*=\s*"([^"]+)"'
         if ($versionContent) {
             $appVersion = $versionContent.Matches.Groups[1].Value
         }
@@ -111,12 +107,12 @@ try {
     }
     else {
         $appVersion = "dev"
-        Write-Host "   [DEBUG] __version__.py not found at: $versionPath" -ForegroundColor DarkYellow
+        Write-Host "   [DEBUG] version.py not found at: $versionPath" -ForegroundColor DarkYellow
     }
 }
 catch {
     $appVersion = "dev"
-    Write-Host "   [DEBUG] Error reading __version__.py: $_" -ForegroundColor Red
+    Write-Host "   [DEBUG] Error reading version.py: $_" -ForegroundColor Red
 }
 
 Write-Host "   - App-Version: $appVersion" -ForegroundColor Cyan

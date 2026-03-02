@@ -134,6 +134,9 @@ python scripts/update_version.py
 ```powershell
 # Alle Tests mit Coverage-Report
 .\scripts\run_local.ps1 -Test -Coverage
+
+# oder (mit Coverage)
+uv run pytest --cov
 ```
 
 **Erwartung:**
