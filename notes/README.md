@@ -23,6 +23,7 @@ I:\Development\
 3. Merge dev → main für Release
 
 **Dev-Only Files (werden automatisch ausgefiltert):**
+
 - `notes/` - Persönliche Notizen
 - `en/` - Work-in-Progress Übersetzungen
 - `RELEASE_CHECKLIST.md` - Diese Datei
@@ -91,7 +92,7 @@ pre-commit run --all-files
 - ✅ Merge Conflicts - Prüft auf vergessene Conflict-Marker
 - ✅ TOML Syntax - pyproject.toml Validierung
 - ✅ Line Endings - Konsistente Zeilenenden (LF/CRLF)
-- ✅ Version Sync - Prüft config.yaml ↔ __version__.py
+- ✅ Version Sync - Prüft config.yaml ↔ version.py
 
 **Bei Fehlern:**
 
@@ -112,7 +113,7 @@ pre-commit run --all-files
 **Datei:** `huawei_solar_modbus_mqtt/config.yaml`
 
 ```yaml
-version: '1.8.0' # Neue Version hier eintragen
+version: "1.8.0" # Neue Version hier eintragen
 ```
 
 #### Automatische Synchronisation
@@ -123,7 +124,7 @@ python scripts/update_version.py
 
 **Aktualisiert automatisch:**
 
-1. `huawei_solar_modbus_mqtt/bridge/__version__.py` → `__version__ = "1.8.0"`
+1. `huawei_solar_modbus_mqtt/bridge/version.py` → `version = "1.8.0"`
 2. Dependency-Versionen in `requirements.txt` (falls geändert)
 
 ---

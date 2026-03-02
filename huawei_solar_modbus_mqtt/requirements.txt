@@ -1,3 +1,0 @@
-huawei-solar>=2.1.5
-pymodbus>=3.8.3,<4.0.0
-paho-mqtt>=2.0.0
