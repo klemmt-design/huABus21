@@ -252,3 +252,31 @@ teardown() {
     [ "$HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID" = "false" ]
     [ "$HUAWEI_SLAVE_ID" = "5" ]
 }
+
+@test "Caching environment variables are exported correctly" {
+    source huawei_solar_modbus_mqtt/run.sh >/dev/null 2>&1
+
+    [ "$HUAWEI_ENABLE_CACHING" = "false" ]
+    [ "$HUAWEI_CACHE_MAX_AGE" = "30" ]
+}
+
+@test "Caching enabled from config" {
+    bashio::config() {
+        case "$1" in
+        enable_caching) echo 'true' ;;
+        cache_max_age) echo '40' ;;
+        modbus_host) echo '192.168.1.100' ;;
+        mqtt_topic) echo 'huawei-solar' ;;
+        log_level) echo 'INFO' ;;
+        status_timeout) echo '180' ;;
+        poll_interval) echo '30' ;;
+        *) echo '' ;;
+        esac
+    }
+    export -f bashio::config
+
+    source huawei_solar_modbus_mqtt/run.sh >/dev/null 2>&1
+
+    [ "$HUAWEI_ENABLE_CACHING" = "true" ]
+    [ "$HUAWEI_CACHE_MAX_AGE" = "40" ]
+}

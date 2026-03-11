@@ -59,18 +59,8 @@ configuration:
 
   enable_caching:
     name: Caching aktivieren
-    description: |
-      Aktiviert Zwischenspeicherung der Sensordaten für häufigere MQTT-Updates.
-
-      **Für EVCC optimiert**: Bei `poll_interval: 20s` werden zwischen den Modbus-Abfragen jede Sekunde die letzten bekannten Werte erneut veröffentlicht. Verhindert Null-Werte und Datenlücken in EVCC ohne zusätzliche Belastung des Wechselrichters.
+    description: Wiederholt Daten sekündlich zwischen Polls (nützlich für native MQTT-Andindung, z.B. EVCC via MQTT) - vermeidet Datenlücken
 
   cache_max_age:
     name: Cache Lebensdauer
-    description: |
-      Maximale Lebensdauer gecachter Sensordaten in Sekunden.
-
-      **Empfehlung**: `poll_interval + 10s` oder länger
-      - `poll_interval: 20s` → `cache_max_age: 30s` ✓
-      - `poll_interval: 30s` → `cache_max_age: 40s` ✓
-
-      Werte < `poll_interval` führen zu Datenlücken!
+    description: "Empfohlenes Intervall: poll_interval+10s, sonst entstehen Datenlücken"

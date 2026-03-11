@@ -2,7 +2,8 @@
 
 param(
     [switch]$Test,
-    [switch]$Coverage
+    [switch]$Coverage,
+    [switch]$Shell
 )
 
 # ===== GET SCRIPT AND ROOT DIRECTORY =====
@@ -17,11 +18,10 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # ===== TEST MODE =====
-if ($Test) {
+if ($Test -or $Shell) {
     Write-Host "🧪 Running tests..." -ForegroundColor Yellow
 
     # uv sync vor Tests (reproduzierbar)
-    Write-Host "🔄 Syncing dependencies..." -ForegroundColor Cyan
     uv sync --all-extras
     if ($LASTEXITCODE -ne 0) {
         Write-Host "❌ Dependency sync failed!" -ForegroundColor Red
@@ -31,7 +31,16 @@ if ($Test) {
     # Wechsel ins Root-Verzeichnis für pytest
     Push-Location $rootDir
 
-    if ($Coverage) {
+    if ($Shell) {
+        if (Get-Command bats -ErrorAction SilentlyContinue) {
+            Write-Host "🐚 Running BATS locally..." -ForegroundColor Cyan
+            bats tests/test_run.bats
+        } else {
+            Write-Host "⚠️  BATS not installed (scoop install bats)" -ForegroundColor Yellow
+            Write-Host "   Skipping shell tests." -ForegroundColor Yellow
+        }
+    }
+    elseif ($Coverage) {
         uv run pytest -v --cov=huawei_solar_modbus_mqtt/bridge --cov-report=html
         if ($LASTEXITCODE -eq 0) {
             Write-Host "✅ All tests passed!" -ForegroundColor Green
@@ -162,15 +171,21 @@ Write-Host "   - paho-mqtt: $pahoVersion" -ForegroundColor White
 Write-Host "========================================================================" -ForegroundColor Cyan
 Write-Host ">> Configuration:" -ForegroundColor Blue
 Write-Host "   🔌 Inverter: $env:HUAWEI_MODBUS_HOST`:$env:HUAWEI_MODBUS_PORT (Slave ID: $env:HUAWEI_SLAVE_ID)" -ForegroundColor White
-Write-Host "   📡 MQTT:     $env:HUAWEI_MODBUS_MQTT_BROKER`:$env:HUAWEI_MODBUS_MQTT_PORT" -ForegroundColor White
-Write-Host "   📍 Topic:    $env:HUAWEI_MODBUS_MQTT_TOPIC" -ForegroundColor White
-Write-Host "   ⏱️  Poll:     $env:HUAWEI_POLL_INTERVAL`s | Timeout: $env:HUAWEI_STATUS_TIMEOUT`s" -ForegroundColor White
-Write-Host "   📍 Log:      $env:HUAWEI_LOG_LEVEL" -ForegroundColor White
+Write-Host "   📡 MQTT    : $env:HUAWEI_MQTT_HOST`:$env:HUAWEI_MQTT_PORT" -ForegroundColor White
+Write-Host "   📍 Topic   : $env:HUAWEI_MQTT_TOPIC" -ForegroundColor White
+Write-Host "   ⏱️  Poll    : $env:HUAWEI_POLL_INTERVAL`s | Timeout: $env:HUAWEI_STATUS_TIMEOUT`s" -ForegroundColor White
+if ($env:HUAWEI_ENABLE_CACHING -eq "True" -or $env:HUAWEI_ENABLE_CACHING -eq "true") {
+    Write-Host "   💾 Cache   : enabled | max_age=$env:HUAWEI_CACHE_MAX_AGE`s (MQTT heartbeat every second)" -ForegroundColor White
+}
+else {
+    Write-Host "   💾 Cache   : disabled" -ForegroundColor White
+}
+Write-Host "   📍 Log     : $env:HUAWEI_LOG_LEVEL" -ForegroundColor White
 Write-Host "========================================================================" -ForegroundColor Cyan
 
 # Check if MQTT broker is reachable
-$mqttHost = $env:HUAWEI_MODBUS_MQTT_BROKER
-$mqttPort = $env:HUAWEI_MODBUS_MQTT_PORT
+$mqttHost = $env:HUAWEI_MQTT_HOST
+$mqttPort = $env:HUAWEI_MQTT_PORT
 try {
     $connection = Test-NetConnection -ComputerName $mqttHost -Port $mqttPort -WarningAction SilentlyContinue
     if (!$connection.TcpTestSucceeded) {

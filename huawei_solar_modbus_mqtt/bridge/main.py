@@ -485,7 +485,11 @@ async def main() -> None:
     )
 
     if config.enable_caching:
-        logger.info(f"💾 Cache enabled (max_age={cache.max_age}s)")
+        logger.info(
+            f"💾 Cache: enabled (max_age={cache.max_age}s, publish every second between {config.poll_interval}s polls)"
+        )
+    else:
+        logger.info("💾 Cache: disabled")
 
     # === Main Loop ===
     cycle_count: float = 0
