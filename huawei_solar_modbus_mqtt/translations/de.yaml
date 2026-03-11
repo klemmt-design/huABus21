@@ -1,3 +1,5 @@
+# huawei_solar_modbus_mqtt\translations\de.yamlMoin!
+
 configuration:
   # === MODBUS Einstellungen ===
   modbus_host:
@@ -45,7 +47,7 @@ configuration:
   # === Erweiterte Einstellungen ===
   log_level:
     name: Log-Level
-    description: 'TRACE: Alles inkl. Modbus-Bytes | DEBUG: Detaillierte Performance-Metriken | INFO: Wichtige Ereignisse (empfohlen) | WARNING/ERROR: Nur Probleme'
+    description: "TRACE: Alles inkl. Modbus-Bytes | DEBUG: Detaillierte Performance-Metriken | INFO: Wichtige Ereignisse (empfohlen) | WARNING/ERROR: Nur Probleme"
 
   status_timeout:
     name: Status Timeout
@@ -54,3 +56,21 @@ configuration:
   poll_interval:
     name: Abfrageintervall
     description: Intervall in Sekunden zwischen Modbus-Abfragen vom Wechselrichter. Empfohlen 30-60s für optimale Balance zwischen Aktualität und Netzwerklast
+
+  enable_caching:
+    name: Caching aktivieren
+    description: |
+      Aktiviert Zwischenspeicherung der Sensordaten für häufigere MQTT-Updates.
+
+      **Für EVCC optimiert**: Bei `poll_interval: 20s` werden zwischen den Modbus-Abfragen jede Sekunde die letzten bekannten Werte erneut veröffentlicht. Verhindert Null-Werte und Datenlücken in EVCC ohne zusätzliche Belastung des Wechselrichters.
+
+  cache_max_age:
+    name: Cache Lebensdauer
+    description: |
+      Maximale Lebensdauer gecachter Sensordaten in Sekunden.
+
+      **Empfehlung**: `poll_interval + 10s` oder länger
+      - `poll_interval: 20s` → `cache_max_age: 30s` ✓
+      - `poll_interval: 30s` → `cache_max_age: 40s` ✓
+
+      Werte < `poll_interval` führen zu Datenlücken!

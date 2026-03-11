@@ -1,11 +1,14 @@
-"""Configuration Manager for Huawei Solar Modbus MQTT Bridge.
+# huawei_solar_modbus_mqtt\bridge\config_manager.py
 
-Handles configuration loading from:
-- Environment variables (Docker/Add-on runtime)
-- /data/options.json (Home Assistant Add-on)
-- Default values (development)
+"""
+Konfigurationsmanager für Huawei Solar Modbus MQTT Bridge.
 
-Uses flat configuration structure (no nesting) for Home Assistant compatibility.
+Verwaltet das Laden der Konfiguration von:
+  - Umgebungsvariablen (Docker/Add-on-Laufzeit)
+  - /data/options.json (Home Assistant-Add-on)
+  - Standardwerte (Entwicklung)
+
+Verwendet eine flache Konfigurationsstruktur (keine Verschachtelung) für Home Assistant-Kompatibilität.
 """
 
 import json
@@ -21,7 +24,8 @@ class ConfigManager:
     """Manage add-on configuration with validation."""
 
     def __init__(self, config_path: Path | None = None):
-        """Initialize ConfigManager.
+        """
+        Initialize ConfigManager.
 
         Args:
             config_path: Path to options.json (default: /data/options.json)
@@ -31,7 +35,9 @@ class ConfigManager:
         self._load_config()
 
     def _load_config(self) -> None:
-        """Load configuration from file or environment variables."""
+        """
+        Load configuration from file or environment variables.
+        """
         if self.config_path.exists():
             logger.info(f"🚀 Loading configuration from {self.config_path}")
             with open(self.config_path) as f:
@@ -42,7 +48,8 @@ class ConfigManager:
             self._config = self._load_from_env()
 
     def _load_from_env(self) -> dict[str, Any]:
-        """Load configuration from environment variables.
+        """
+        Load configuration from environment variables.
 
         Returns:
             Configuration dictionary with flat structure
@@ -63,11 +70,14 @@ class ConfigManager:
             "log_level": os.getenv("HUAWEI_LOG_LEVEL", "INFO"),
             "status_timeout": self._parse_int_env("HUAWEI_STATUS_TIMEOUT", default=180),
             "poll_interval": self._parse_int_env("HUAWEI_POLL_INTERVAL", default=30),
+            "enable_caching": self._parse_bool_env("HUAWEI_ENABLE_CACHING", default=False),
+            "cache_max_age": self._parse_int_env("HUAWEI_CACHE_MAX_AGE", default=30),
         }
 
     @staticmethod
     def _parse_bool_env(key: str, default: bool = False) -> bool:
-        """Parse boolean environment variable.
+        """
+        Parse boolean environment variable.
 
         Args:
             key: Environment variable name
@@ -83,7 +93,8 @@ class ConfigManager:
 
     @staticmethod
     def _parse_int_env(key: str, default: int = 0) -> int:
-        """Parse integer environment variable.
+        """
+        Parse integer environment variable.
 
         Args:
             key: Environment variable name
@@ -169,6 +180,14 @@ class ConfigManager:
         """Get poll interval in seconds."""
         return cast(int, self._config.get("poll_interval", 30))
 
+    @property
+    def enable_caching(self) -> bool:
+        return cast(bool, self._config.get("enable_caching", False))
+
+    @property
+    def cache_max_age(self) -> int:
+        return cast(int, self._config.get("cache_max_age", 30))
+
     # === Validation ===
 
     def validate(self) -> list[str]:
@@ -210,6 +229,16 @@ class ConfigManager:
 
         if not (10 <= self.poll_interval <= 300):
             errors.append(f"poll_interval must be 10-300 seconds, got {self.poll_interval}")
+
+        if not (10 <= self.cache_max_age <= 300):
+            errors.append(f"cache_max_age must be 10-300s, got {self.cache_max_age}")
+
+        if self.enable_caching:
+            if self.cache_max_age < self.poll_interval:
+                errors.append(
+                    f"cache_max_age ({self.cache_max_age}s) should be >= poll_interval "
+                    f"({self.poll_interval}s) - cache would expire before next poll!"
+                )
 
         return errors
 
@@ -255,3 +284,9 @@ class ConfigManager:
         logger.debug(f"  Log Level: {self.log_level}")
         logger.debug(f"  Status Timeout: {self.status_timeout}s")
         logger.debug(f"  Poll Interval: {self.poll_interval}s")
+
+        # Caching
+        if self.enable_caching:
+            logger.debug(f"  Caching: enabled (max_age={self.cache_max_age}s)")
+        else:
+            logger.debug("  Caching: disabled")

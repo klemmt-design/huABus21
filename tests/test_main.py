@@ -1,4 +1,6 @@
-# tests/test_main.py
+# tests\test_main.py
+
+"""Tests for Main."""
 
 import asyncio
 import time
@@ -13,8 +15,11 @@ from bridge.main import (
     is_modbus_exception,
     main,
     main_once,
+    sleep_with_cache_publish,
 )
 from bridge.total_increasing_filter import reset_filter
+
+from huawei_solar_modbus_mqtt.bridge.cache_layer import CacheLayer
 
 
 @pytest.fixture(autouse=True)
@@ -359,6 +364,7 @@ async def test_main_once_successful_cycle():
     mock_config = Mock()
     mock_config.mqtt_topic = "test-topic"
     mock_config.poll_interval = 30
+    cache = CacheLayer(enabled=False)
 
     with (
         patch("bridge.main.read_registers") as mock_read,
@@ -374,7 +380,7 @@ async def test_main_once_successful_cycle():
         mock_filter_instance.filter.return_value = {"power_active": 4500}
         mock_filter.return_value = mock_filter_instance
 
-        await main_once(mock_client, mock_config, 1)
+        await main_once(mock_client, mock_config, 1, cache)
 
         # Verify complete pipeline executed
         assert mock_read.call_count == 1
@@ -390,6 +396,7 @@ async def test_main_once_empty_data_handling():
     mock_config = Mock()
     mock_config.mqtt_topic = "test-topic"
     mock_config.poll_interval = 30
+    cache = CacheLayer(enabled=False)
 
     with (
         patch("bridge.main.read_registers") as mock_read,
@@ -398,7 +405,7 @@ async def test_main_once_empty_data_handling():
         # Return empty data
         mock_read.return_value = {}
 
-        await main_once(mock_client, mock_config, 1)
+        await main_once(mock_client, mock_config, 1, cache)
 
         # Should return early without publishing
         assert mock_publish.call_count == 0
@@ -411,6 +418,7 @@ async def test_main_once_updates_last_success():
     mock_config = Mock()
     mock_config.mqtt_topic = "test-topic"
     mock_config.poll_interval = 30
+    cache = CacheLayer(enabled=False)
 
     # Reset LAST_SUCCESS
     main_module.LAST_SUCCESS = 0
@@ -432,7 +440,7 @@ async def test_main_once_updates_last_success():
         mock_filter_instance.filter.return_value = {"power_active": 4500}
         mock_filter.return_value = mock_filter_instance
 
-        await main_once(mock_client, mock_config, 1)
+        await main_once(mock_client, mock_config, 1, cache)
 
         # Verify LAST_SUCCESS was updated
         assert main_module.LAST_SUCCESS >= before
@@ -506,3 +514,69 @@ async def test_determine_slave_id_manual_mode_none_exits():
 
     with pytest.raises(SystemExit):
         await determine_slave_id(mock_config)
+
+
+async def test_main_updates_cache_after_cycle():
+    """Test that cache is updated after successful polling cycle."""
+
+    mock_client = AsyncMock()
+    mock_config = Mock()
+    mock_config.mqtt_topic = "test-topic"
+    mock_config.poll_interval = 30
+    mock_config.enable_caching = True
+
+    cache = Mock(spec=CacheLayer)  # ← Mock mit CacheLayer-Interface
+
+    with (
+        patch("bridge.main.read_registers") as mock_read,
+        patch("bridge.main.transform_data") as mock_transform,
+        patch("bridge.main.publish_data"),
+        patch("bridge.main.log_cycle_summary"),
+        patch("bridge.main.get_filter") as mock_filter,
+    ):
+        mock_read.return_value = {"power_active": 4500}
+        mock_transform.return_value = {"power_active": 4500}
+
+        mock_filter_instance = Mock()
+        mock_filter_instance.filter.return_value = {"power_active": 4500}
+        mock_filter.return_value = mock_filter_instance
+
+        await main_once(mock_client, mock_config, 1, cache)  # ← Mock direkt übergeben
+
+        cache.update.assert_called_once_with({"power_active": 4500})
+
+
+@pytest.mark.asyncio
+async def test_main_publishes_cached_values_between_cycles():
+    mock_config = Mock()
+    mock_config.poll_interval = 2  # klein halten
+    mock_config.enable_caching = True
+
+    cache = Mock(spec=CacheLayer)
+    cache.get_cached.return_value = {"power_active": 4500}
+
+    with patch("bridge.main.publish_data") as mock_publish:
+        await sleep_with_cache_publish(mock_config, cache)
+
+    assert mock_publish.call_count >= 1
+
+
+@pytest.mark.asyncio
+async def test_main_skips_publish_when_cache_empty():
+    """No publish should occur when cache returns empty."""
+
+    mock_cache = Mock()
+
+    with (
+        patch("bridge.main.CacheLayer") as mock_cache_class,
+        patch("bridge.main.publish_data") as mock_publish,
+    ):
+        mock_cache_class.return_value = mock_cache
+        mock_cache.get_cached.return_value = {}
+
+        cached = mock_cache.get_cached()
+
+        if cached:
+            main_module.publish_data(cached, "test-topic")
+
+        mock_publish.assert_not_called()

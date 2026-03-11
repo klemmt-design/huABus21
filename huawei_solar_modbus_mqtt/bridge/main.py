@@ -1,4 +1,4 @@
-# bridge/main.py
+# huawei_solar_modbus_mqtt\bridge\main.py
 
 """
 Hauptmodul des Huawei Solar Modbus-to-MQTT Add-ons.
@@ -27,6 +27,7 @@ from typing import Any
 
 from huawei_solar import AsyncHuaweiSolar
 
+from .cache_layer import CacheLayer
 from .config.registers import ESSENTIAL_REGISTERS
 from .config_manager import ConfigManager
 from .error_tracker import ConnectionErrorTracker
@@ -200,6 +201,30 @@ def heartbeat(config: ConfigManager) -> None:
         logger.debug(f"Heartbeat OK: {offline_duration:.1f}s since last success")
 
 
+async def sleep_with_cache_publish(config: ConfigManager, cache: CacheLayer) -> None:
+    """
+    Wartet poll_interval Sekunden, publiziert dabei optional Cache-Werte.
+
+    Dadurch erhält MQTT regelmäßige Updates zwischen zwei Modbus-Polls,
+    ohne zusätzliche Last auf dem Inverter zu erzeugen.
+
+    Args:
+        config: ConfigManager instance
+        cache: CacheLayer instance
+    """
+    sleep_step = 1
+    elapsed = 0
+
+    while elapsed < config.poll_interval:
+        await asyncio.sleep(sleep_step)
+        elapsed += sleep_step
+
+        if config.enable_caching:
+            cached = cache.get_cached()
+            if cached:
+                publish_data(cached, config.mqtt_topic)
+
+
 def log_cycle_summary(cycle_num: float, timings: dict[str, float], data: dict[str, Any]) -> None:
     """Loggt Cycle-Zusammenfassung."""
     filter_stats = get_filter().get_stats()
@@ -269,7 +294,7 @@ def is_modbus_exception(exc: Exception) -> bool:
     return isinstance(exc, MODBUS_EXCEPTIONS)
 
 
-async def main_once(client: AsyncHuaweiSolar, config: ConfigManager, cycle_num: float) -> None:
+async def main_once(client: AsyncHuaweiSolar, config: ConfigManager, cycle_num: float, cache: CacheLayer) -> None:
     """
     Führt einen kompletten Read-Transform-Filter-Publish Cycle aus.
 
@@ -318,7 +343,10 @@ async def main_once(client: AsyncHuaweiSolar, config: ConfigManager, cycle_num: 
     LAST_SUCCESS = time.time()
     cycle_duration: float = time.time() - start
 
-    # === PHASE 5: Logging ===
+    # === PHASE 5: Cache ===
+    cache.update(mqtt_data)
+
+    # === PHASE 6: Logging ===
     timings = {
         "modbus": modbus_duration,
         "transform": transform_duration,
@@ -450,6 +478,15 @@ async def main() -> None:
     logger.info("🛡️ Total Increasing Filter initialized")
     logger.info(f"⏱️ Poll interval: {config.poll_interval}s")
 
+    # Cache initialisieren
+    cache = CacheLayer(
+        enabled=config.enable_caching,
+        max_age=config.cache_max_age,
+    )
+
+    if config.enable_caching:
+        logger.info(f"💾 Cache enabled (max_age={cache.max_age}s)")
+
     # === Main Loop ===
     cycle_count: float = 0
     try:
@@ -458,7 +495,7 @@ async def main() -> None:
             logger.debug(f"Cycle #{cycle_count}")
 
             try:
-                await main_once(client, config, cycle_count)
+                await main_once(client, config, cycle_count, cache)
                 error_tracker.mark_success()
                 publish_status("online", config.mqtt_topic)
 
@@ -491,7 +528,7 @@ async def main() -> None:
                 await asyncio.sleep(10)
 
             heartbeat(config)
-            await asyncio.sleep(config.poll_interval)
+            await sleep_with_cache_publish(config, cache)
 
     except (KeyboardInterrupt, asyncio.CancelledError):
         logger.info("🛑 Shutdown")
