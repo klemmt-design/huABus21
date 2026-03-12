@@ -36,7 +36,7 @@ options:
   status_timeout: 180
   poll_interval: 30
   enable_caching: false
-  cache_max_age: 30
+  cache_max_age: 40
 schema:
   modbus_host: str
   modbus_port: port
