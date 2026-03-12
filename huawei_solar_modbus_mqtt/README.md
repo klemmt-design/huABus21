@@ -13,25 +13,26 @@
 [![armv7](https://img.shields.io/badge/armv7-yes-green.svg)](https://github.com/arboeh/huABus)
 [![i386](https://img.shields.io/badge/i386-yes-green.svg)](https://github.com/arboeh/huABus)
 
-> This is the **huABus** Home Assistant App. Please refer to the
-> [GitHub Repository](https://github.com/arboeh/huABus) for full documentation,
+> This is the **huABus** Home Assistant App. Please refer to the  
+> [GitHub Repository](https://github.com/arboeh/huABus) for full documentation,  
 > configuration options, and troubleshooting guides.
 >
-> ⚠️ Huawei inverters allow only **one active Modbus TCP connection** at a time.
+> ⚠️ Huawei inverters allow only **one active Modbus TCP connection** at a time.  
 > Remove any other Huawei integrations before installing.
 
 ## About
 
-Reads data from your Huawei inverter via Modbus TCP and publishes it via MQTT
+Reads data from your Huawei inverter via Modbus TCP and publishes it via MQTT  
 with automatic Home Assistant discovery.
 
 ## Features
 
 - **67 Essential Registers** for complete inverter monitoring
 - **Automatic Slave ID Detection** — tries common values (1, 2, 100) automatically
+- **MQTT Heartbeat (optional cache)** — republishes the last valid data between Modbus polling cycles for smoother updates
 - **Total Increasing Filter** — prevents false counter resets, active from first cycle
 - **Intelligent error tracking** with downtime aggregation and recovery logging
 - **MQTT Auto-Discovery** — all entities appear automatically under a single device
 - **Auto MQTT credentials** — uses Home Assistant MQTT Service by default
-- **Comprehensive test suite** — 88% coverage with unit, integration, and E2E tests
+- **Comprehensive test suite** — 89% coverage with unit, integration, and E2E tests
 - **Multi-architecture support** (aarch64, amd64, armhf, armv7, i386)

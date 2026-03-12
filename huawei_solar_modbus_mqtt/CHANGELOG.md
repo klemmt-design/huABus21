@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2026-03-12
+
+### Added
+
+- **Optional MQTT Cache Layer**: Stabilized sensor updates between Modbus polling cycles
+  - Huawei inverters allow relatively slow Modbus polling (typically 20-30 seconds)
+  - Some consumers (e.g. EVCC) benefit from more frequent power updates
+  - New optional cache republishes the last valid MQTT payload between two real Modbus reads
+  - Prevents data gaps and enables a 1-second MQTT heartbeat between polls
+
+**Architecture**
+
+```
+Modbus Read
+↓
+transform_data()
+↓
+TotalIncreasingFilter
+↓
+MQTT publish (real data)
+↓
+CacheLayer.update()
+↓
+sleep loop
+↓
+CacheLayer.get_cached() → MQTT publish (cached data)
+```
+
+**Configuration**
+
+```yaml
+enable_caching: true
+cache_max_age: 40
+```
+
+### Improved
+
+- **MQTT cache implementation**
+  - Cache now stores the complete MQTT payload instead of individual sensor values
+  - Ensures consistent MQTT messages during cached publishes
+  - Simplifies cache logic and improves data stability
+
 ## [1.8.2] - 2026-03-02
 
 ### Changed

@@ -17,6 +17,9 @@
 [![armv7](https://img.shields.io/badge/armv7-yes-green.svg)](https://github.com/arboeh/huABus)
 [![i386](https://img.shields.io/badge/i386-yes-green.svg)](https://github.com/arboeh/huABus)
 
+**67 Essential Registers • 69+ Entities • Optional MQTT Heartbeat • 30s Polling**  
+**Changelog:** [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md)
+
 > **⚠️ IMPORTANT: Single Modbus Connection Limit**
 > Huawei inverters allow **only ONE active Modbus TCP connection**. This is a common beginner mistake.
 >
@@ -28,8 +31,14 @@
 >
 > Multiple connections cause **timeouts and data loss**!
 
-**67 Essential Registers, 69+ entities, ~3-8s cycle time**
-**Changelog:** [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md)
+💡 **Why is there a poll interval?**
+
+Huawei inverters allow only relatively slow Modbus polling for stability
+(typically around 20-30 seconds). This addon can optionally enable an
+MQTT cache that republishes the last valid sensor values between two
+poll cycles, keeping Home Assistant sensors updated continuously.
+
+![Polling and MQTT cache flow](images/cache_flow.svg)
 
 ## 🔌 Compatible Inverters
 
@@ -65,6 +74,7 @@ _Missing registers (battery/meter) are handled gracefully - your inverter will w
 ## Features
 
 - **Automatic Slave ID Detection:** No more guessing! Tries common values (1, 2, 100) automatically
+- **MQTT Heartbeat (optional cache):** Republishes the last valid data between Modbus polling cycles for smoother updates
 - **Modbus TCP → MQTT:** 69+ entities with Auto-Discovery
 - **Complete Monitoring:** Battery, PV (1-4), Grid (3-phase), Energy counters
 - **Total Increasing Filter:** Prevents false counter resets in energy statistics
@@ -74,7 +84,7 @@ _Missing registers (battery/meter) are handled gracefully - your inverter will w
 - **Auto MQTT Configuration:** Automatically uses Home Assistant MQTT credentials
 - **TRACE Log Level:** Ultra-detailed debugging with Modbus byte arrays
 - **Comprehensive Test Suite:** 86% code coverage with unit, integration, and E2E tests
-- **Performance:** ~2-5s cycle, configurable poll interval (30-60s recommended)
+- **Performance:** ~2–5s read cycle, configurable poll interval (30–60s recommended)
 - **Error Tracking:** Intelligent aggregation with downtime tracking
 - **MQTT Stability:** Connection wait loop and retry logic
 - **Cross-Platform:** All major architectures (aarch64, amd64, armhf, armv7, i386)
@@ -171,6 +181,8 @@ Configure via Home Assistant UI with translated field names:
 - **Log Level:** `TRACE` | `DEBUG` | `INFO` (recommended) | `WARNING` | `ERROR`
 - **Status Timeout:** Default: `180s` (range: 30-600)
 - **Poll Interval:** Default: `30s` (range: 10-300, recommended: 30-60s)
+- **Enable Caching:** Default `false` — republishes cached data between Modbus polls
+- **Cache Max Age:** Default `30s` — maximum lifetime of cached values
 
 **💡 Pro Tip:** Leave MQTT credentials empty - the addon automatically uses Home Assistant MQTT Service settings!
 
@@ -219,19 +231,17 @@ _\* Protected by Total Increasing filter against false counter resets_
 
 See [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md) for detailed release notes.
 
-**v1.8.0 Highlights (Feb 2026):**
+**v1.9.0 Highlights (Mar 2026):**
 
-- ✅ **Automatic Slave ID Detection:** No more guessing - tries 0, 1, 2, 100 automatically
-- ✅ **Enhanced MQTT Auto-Config:** Seamlessly uses HA MQTT Service credentials
-- ✅ **Dynamic Register Count:** Startup logs show exact number of registers
-- ✅ **Improved Error Messages:** Better guidance for connection issues
+- ⚡ **Optional MQTT Heartbeat Cache:** Smooth 1-second sensor updates between Modbus polls
+- 🔌 **Better EVCC Compatibility:** Stable power readings for energy management systems
+- 🧠 **Improved MQTT Payload Consistency:** Simplified cache implementation
 
 **Previous releases:**
 
-- ✅ **v1.7.4:** AppArmor backup support fixed, new Modbus registers
-- ✅ **v1.7.3:** AppArmor security profile for container isolation
-- ✅ **v1.7.2:** Enhanced test coverage (86%)
-- ✅ **v1.7.1:** Restart zero-drop fix
+- ✅ **v1.8.2:** CI migration to `uv` (40% faster builds)
+- ✅ **v1.8.1:** Fix for Home Assistant 2025.1 Modbus slave ID handling
+- ✅ **v1.8.0:** Automatic Slave ID detection
 
 ## Troubleshooting
 

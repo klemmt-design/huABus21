@@ -21,6 +21,19 @@ Liest Daten deines Huawei Wechselrichters per Modbus TCP aus und veröffentlicht
 >
 > **Regel:** Nur EINE Modbus-Verbindung = stabiles System ✅
 
+💡 **Warum gibt es ein Poll-Intervall?**
+
+Huawei-Wechselrichter erlauben aus Stabilitätsgründen nur relativ langsames
+Modbus-Polling (typisch **20-30 Sekunden**). Häufigere Abfragen können zu
+Timeouts oder instabilen Verbindungen führen.
+
+huABus kann optional einen **MQTT-Cache (Heartbeat)** aktivieren. Dieser
+veröffentlicht zwischen zwei Modbus-Abfragen erneut die zuletzt gültigen
+Messwerte. Dadurch bleiben Sensoren in Home Assistant kontinuierlich
+aktualisiert, auch wenn das Poll-Intervall länger ist.
+
+![Polling und MQTT-Cache Ablauf](../images/cache_flow.svg)
+
 ## 🚀 Schnellstart
 
 ### 1. Installation
@@ -32,9 +45,9 @@ Liest Daten deines Huawei Wechselrichters per Modbus TCP aus und veröffentlicht
 ### 2. Minimalkonfiguration
 
 ```yaml
-modbus_host: '192.168.1.100' # Deine Inverter-IP
+modbus_host: "192.168.1.100" # Deine Inverter-IP
 modbus_auto_detect_slave_id: true # Auto-Erkennung (Standard)
-log_level: 'INFO'
+log_level: "INFO"
 ```
 
 **Optional:** Manuelle Slave ID setzen, falls Auto-Erkennung fehlschlägt:
@@ -72,6 +85,10 @@ INFO - 📊 Published - PV: 4500W | AC Out: 4200W | ...
 ## Funktionen
 
 - **Automatische Slave ID-Erkennung:** Probiert automatisch gängige Werte (0, 1, 2, 100)
+- **Optionaler MQTT-Heartbeat Cache:** Veröffentlicht zwischen zwei Modbus-Abfragen erneut die letzten gültigen Werte
+  - hält Home Assistant Sensoren kontinuierlich aktualisiert
+  - verbessert die Kompatibilität mit Energiemanagement-Systemen (z.B. EVCC)
+  - vollständig optional aktivierbar
 - **Auto MQTT-Konfiguration:** Nutzt automatisch Home Assistant MQTT Service-Zugangsdaten
 - **Schnelle Modbus TCP Verbindung** (58 Register, 2-5s Cycle-Time)
 - **total_increasing Filter:** Verhindert falsche Counter-Resets
@@ -115,8 +132,17 @@ INFO - 📊 Published - PV: 4500W | AC Out: 4200W | ...
   - `INFO`: Wichtige Ereignisse, Filter-Zusammenfassungen alle 20 Cycles (empfohlen)
   - `WARNING/ERROR`: Nur Probleme
 - **status_timeout** (Standard: `180s`, Range: 30-600): Offline-Timeout
-- **poll_interval** (Standard: `30s`, Range: 10-300): Abfrageintervall
-  - Empfohlen: 30-60s für optimale Balance
+- **poll_interval** (Standard: `30s`, Range: 10-300): Abfrageintervall für Modbus
+  - Empfohlen: **30-60s** für stabile Verbindungen
+
+  Wenn Caching aktiviert ist, können MQTT-Updates trotzdem häufiger erfolgen,
+  da zwischen zwei Poll-Zyklen die letzten gültigen Werte erneut veröffentlicht werden.
+
+- **enable_caching** (Standard: `false`):
+  Veröffentlicht zwischen zwei Modbus-Abfragen erneut die zuletzt gültigen Sensorwerte.
+
+- **cache_max_age** (Standard: `40s`):
+  Maximales Alter eines Cache-Wertes bevor er verworfen wird.
 
 ## MQTT Topics
 

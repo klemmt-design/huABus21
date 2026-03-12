@@ -17,6 +17,9 @@
 [![armv7](https://img.shields.io/badge/armv7-yes-green.svg)](https://github.com/arboeh/huABus)
 [![i386](https://img.shields.io/badge/i386-yes-green.svg)](https://github.com/arboeh/huABus)
 
+**67 essenzielle Register • 69+ Entitäten • optionaler MQTT-Heartbeat • 30-60s Polling**  
+**Changelog:** [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md)
+
 > **⚠️ WICHTIG: Nur EINE Modbus-Verbindung möglich**
 > Huawei-Wechselrichter erlauben **nur EINE aktive Modbus TCP-Verbindung**. Dies ist ein häufiger Anfängerfehler.
 >
@@ -28,8 +31,14 @@
 >
 > Mehrere Verbindungen führen zu **Timeouts und Datenverlust**!
 
-**67 Essenzielle Registers, 69+ Entitäten, ~3-8s Laufzeit**
-**Changelog:** [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md)
+💡 **Warum gibt es ein Poll-Intervall?**
+
+Huawei-Wechselrichter erlauben aus Stabilitätsgründen nur relativ langsames Modbus-Polling
+(typisch 20-30 Sekunden). Dieses Addon kann optional einen MQTT-Cache aktivieren, der
+zwischen zwei Abfragen die letzten Messwerte erneut veröffentlicht, damit Sensoren
+in Home Assistant kontinuierlich aktualisiert bleiben.
+
+![Polling und MQTT-Cache Ablauf](images/cache_flow.svg)
 
 ## 🔌 Kompatible Wechselrichter
 
@@ -65,6 +74,7 @@ _Fehlende Register (Batterie/Zähler) werden automatisch behandelt - dein Wechse
 ## Features
 
 - **Automatische Slave ID-Erkennung:** Kein Raten mehr! Probiert automatisch gängige Werte (1, 2, 100)
+- **MQTT Heartbeat (optional):** Wiederholt die letzten gültigen Messwerte zwischen zwei Modbus-Abfragen
 - **Modbus TCP → MQTT:** 69+ Entitäten mit Auto-Discovery
 - **Vollständiges Monitoring:** Batterie, PV (1-4), Netz (3-Phasen), Energie-Counter
 - **Total Increasing Filter:** Verhindert falsche Counter-Resets in Energie-Statistiken
@@ -74,7 +84,7 @@ _Fehlende Register (Batterie/Zähler) werden automatisch behandelt - dein Wechse
 - **Auto MQTT-Konfiguration:** Nutzt automatisch Home Assistant MQTT-Zugangsdaten
 - **TRACE Log Level:** Ultra-detailliertes Debugging mit Modbus-Byte-Arrays
 - **Umfassende Test-Suite:** 86% Code-Coverage mit Unit-, Integration- und E2E-Tests
-- **Performance:** ~2-5s Cycle, konfigurierbares Poll-Intervall (30-60s empfohlen)
+- **Performance:** ~2-5s Lesezyklus, konfigurierbares Poll-Intervall (30-60s empfohlen)
 - **Error Tracking:** Intelligente Aggregation mit Downtime-Tracking
 - **MQTT-Stabilität:** Connection Wait-Loop und Retry-Logik
 - **Plattformübergreifend:** Alle gängigen Architekturen (aarch64, amd64, armhf, armv7, i386)
@@ -171,6 +181,8 @@ Konfiguration über Home Assistant UI mit deutschen Feldnamen:
 - **Log-Level:** `TRACE` | `DEBUG` | `INFO` (empfohlen) | `WARNING` | `ERROR`
 - **Status Timeout:** Standard: `180s` (Range: 30-600)
 - **Abfrageintervall:** Standard: `30s` (Range: 10-300, empfohlen: 30-60s)
+- **Caching aktivieren:** Standard `false` — veröffentlicht zwischen zwei Modbus-Abfragen erneut die letzten Messwerte
+- **Cache Max Age:** Standard `30s` — maximale Lebensdauer eines Cache-Wertes
 
 **💡 Pro-Tipp:** Lass MQTT-Zugangsdaten leer - das Addon nutzt automatisch die Home Assistant MQTT Service-Einstellungen!
 
@@ -219,19 +231,17 @@ _\* Durch Total Increasing Filter vor falschen Counter-Resets geschützt_
 
 Siehe [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md) für detaillierte Release-Notes.
 
-**v1.8.0 Highlights (Feb 2026):**
+**v1.9.0 Highlights (März 2026):**
 
-- ✅ **Automatische Slave ID-Erkennung:** Kein Raten mehr - probiert automatisch 0, 1, 2, 100
-- ✅ **Verbesserte MQTT Auto-Config:** Nahtlose Nutzung der HA MQTT Service-Zugangsdaten
-- ✅ **Dynamische Register-Anzahl:** Startup-Logs zeigen exakte Anzahl der Register
-- ✅ **Bessere Fehlermeldungen:** Klarere Anleitung bei Verbindungsproblemen
+- ⚡ **Optionaler MQTT-Heartbeat Cache:** stabile 1-Sekunden Updates zwischen Modbus-Abfragen
+- 🔌 **Verbesserte EVCC-Kompatibilität:** stabilere Leistungswerte für Energiemanagement-Systeme
+- 🧠 **Vereinfachte MQTT-Payload-Konsistenz:** robuster Cache-Layer
 
 **Frühere Releases:**
 
-- ✅ **v1.7.4:** Backup-Unterstützung gefixt, neue Modbus-Register
-- ✅ **v1.7.3:** AppArmor-Sicherheitsprofil für Container-Isolation
-- ✅ **v1.7.2:** Erhöhte Test-Coverage (86%)
-- ✅ **v1.7.1:** Filter Restart-Schutz (keine Zero-Drops)
+- ✅ **v1.8.2:** CI-Migration zu `uv` (40% schnellere Builds)
+- ✅ **v1.8.1:** Fix für Home Assistant 2025.1 Modbus Slave ID Handling
+- ✅ **v1.8.0:** Automatische Slave ID-Erkennung
 
 ## Fehlerbehebung
 
