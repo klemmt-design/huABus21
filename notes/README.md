@@ -132,14 +132,11 @@ python scripts/update_version.py
 ### 4. Tests ausführen
 
 ```powershell
-# Alle Tests mit Coverage-Report
-.\scripts\run_local.ps1 -Test -Coverage
-
-# oder (mit Coverage)
-uv run pytest --cov
-
-# BATS Tests ausführen !!! IM MOMENT FEHLERHAFT !!!
-.\scripts\run_local.ps1 -Shell
+.\scripts\run_local.ps1              # App starten
+.\scripts\test_local.ps1             # pytest
+.\scripts\test_local.ps1 -Shell      # BATS
+.\scripts\test_local.ps1 -Coverage   # pytest + Coverage-Report
+.\scripts\test_local.ps1 -All        # BATS + pytest
 ```
 
 **Erwartung:**
@@ -661,6 +658,8 @@ Automatisierter, gefilterter Push vom Dev-Repo zum Prod-Repo.
 - `RELEASE_CHECKLIST.md` - Interne Doku
 - `scripts/test_addon_update.ps1` - Dev-Script
 - `scripts/push_to_prod.ps1` - Das Script selbst
+- `scripts/run_local.ps1` - Lokaler Testlauf
+- `scripts/test_local.ps1` - Testing
 - `README.md` - Dev-README
 - IDE Config (`.vscode/`, `.pre-commit-config.yaml`, etc.)
 
@@ -672,7 +671,6 @@ Automatisierter, gefilterter Push vom Dev-Repo zum Prod-Repo.
 **Was bleibt:**
 
 - `tests/` - Für CI/CD
-- `scripts/run_local.ps1` - Testing
 - Production Code
 - GitHub Workflows
 

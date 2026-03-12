@@ -1,4 +1,4 @@
-# huawei_solar_modbus_mqtt\bridge\config_manager.py
+# huawei_solar_modbus_mqtt/bridge/config_manager.py
 
 """
 Konfigurationsmanager für Huawei Solar Modbus MQTT Bridge.

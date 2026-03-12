@@ -1,4 +1,4 @@
-# huawei_solar_modbus_mqtt\bridge\slave_detector.py
+# huawei_solar_modbus_mqtt/bridge/slave_detector.py
 
 """Auto-detection of Modbus Slave ID for Huawei inverters."""
 

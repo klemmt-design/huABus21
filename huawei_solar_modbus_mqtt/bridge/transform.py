@@ -1,4 +1,4 @@
-# huawei_solar_modbus_mqtt\bridge\transform.py
+# huawei_solar_modbus_mqtt/bridge/transform.py
 
 """
 Transformiert Modbus-Register-Daten in MQTT-Format.

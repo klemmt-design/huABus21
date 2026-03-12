@@ -1,4 +1,4 @@
-# huawei_solar_modbus_mqtt\bridge\main.py
+# huawei_solar_modbus_mqtt/bridge/main.py
 
 """
 Hauptmodul des Huawei Solar Modbus-to-MQTT Add-ons.
@@ -296,12 +296,13 @@ def is_modbus_exception(exc: Exception) -> bool:
 
 async def main_once(client: AsyncHuaweiSolar, config: ConfigManager, cycle_num: float, cache: CacheLayer) -> None:
     """
-    Führt einen kompletten Read-Transform-Filter-Publish Cycle aus.
+    Führt einen kompletten Read-Transform-Filter-Publish-Cache Cycle aus.
 
     Args:
-        client: AsyncHuaweiSolar Client
-        config: ConfigManager instance
-        cycle_num: Aktuelle Cycle-Nummer
+        client:     AsyncHuaweiSolar Client
+        config:     ConfigManager instance
+        cycle_num:  Aktuelle Cycle-Nummer
+        cache:      CacheLayer instance für Payload-Zwischenspeicherung
     """
     global LAST_SUCCESS
 
@@ -343,7 +344,7 @@ async def main_once(client: AsyncHuaweiSolar, config: ConfigManager, cycle_num: 
     LAST_SUCCESS = time.time()
     cycle_duration: float = time.time() - start
 
-    # === PHASE 5: Cache ===
+    # === PHASE 5: Cache Update ===
     cache.update(mqtt_data)
 
     # === PHASE 6: Logging ===
@@ -366,7 +367,7 @@ async def main_once(client: AsyncHuaweiSolar, config: ConfigManager, cycle_num: 
         mqtt_duration,
     )
 
-    # === PHASE 6: Performance-Check ===
+    # === PHASE 7: Performance-Check ===
     if cycle_duration > config.poll_interval * 0.8:
         logger.warning("⚠️ Cycle %.1fs > 80%% poll_interval (%ds)", cycle_duration, config.poll_interval)
 

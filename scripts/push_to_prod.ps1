@@ -24,6 +24,7 @@ $DevOnlyFiles = @(
     "scripts/test_addon_update.ps1",
     "scripts/push_to_prod.ps1",
     "scripts/run_local.ps1",
+    "scripts/test_local.ps1",
 
     # Personal Development Content
     "notes",

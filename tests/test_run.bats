@@ -268,11 +268,11 @@ teardown() {
 @test "Caching enabled from config" {
     bashio::config() {
         case "$1" in
-        mqtt_host) echo 'mqtt.custom.local' ;;
         modbus_host) echo '192.168.1.100' ;;
         modbus_port) echo '502' ;;
         modbus_auto_detect_slave_id) echo 'true' ;;
         slave_id) echo '1' ;;
+        mqtt_host) echo 'core-mosquitto' ;;
         mqtt_port) echo '1883' ;;
         mqtt_user) echo '' ;;
         mqtt_password) echo '' ;;
@@ -286,6 +286,8 @@ teardown() {
         esac
     }
     export -f bashio::config
+    # has_value vom setup() bleibt — mqtt_host ist dort NICHT drin → HA-Service-Pfad
+    # Das ist korrekt für diesen Test, wir testen nur Caching!
 
     source huawei_solar_modbus_mqtt/run.sh >/dev/null 2>&1
 

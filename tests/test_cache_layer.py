@@ -1,4 +1,4 @@
-# tests\test_cache_layer.py
+# tests/test_cache_layer.py
 
 """Tests for Cache Layer."""
 
@@ -11,22 +11,12 @@ def test_cache_disabled_returns_empty():
     """Cache sollte nichts zurückgeben wenn deaktiviert."""
     cache = CacheLayer(enabled=False)
     cache.update({"power": 100})
-    print(type(cache))
 
     assert cache.get_cached() == {}
 
 
-def test_cache_update_returns_none():
-    """update() sollte None zurückgeben."""
-    cache = CacheLayer(enabled=True)
-    cache.update({"power": 100})
-    result = cache.get_cached()
-    assert "power" in result
-    assert result["power"] == 100
-
-
 def test_cache_update_and_get():
-    """Gespeicherte Werte sollten wieder abrufbar sein."""
+    """Gespeicherte Werte sollten vollständig wieder abrufbar sein."""
     cache = CacheLayer(enabled=True, max_age=30)
     data = {
         "power_input": 500,
@@ -40,7 +30,7 @@ def test_cache_update_and_get():
 
 
 def test_cache_update_empty_data():
-    """update() mit leerem Dict sollte keinen Fehler werfen."""
+    """update() mit leerem Dict sollte leeres Dict zurückgeben."""
     cache = CacheLayer(enabled=True)
     cache.update({})
 
@@ -48,7 +38,7 @@ def test_cache_update_empty_data():
 
 
 def test_cache_update_overwrites_existing():
-    """Neuere Werte sollen ältere überschreiben."""
+    """Neuerer Payload soll älteren komplett ersetzen."""
     cache = CacheLayer(enabled=True, max_age=30)
     cache.update({"power": 100})
     cache.update({"power": 200})
@@ -56,61 +46,66 @@ def test_cache_update_overwrites_existing():
     assert cache.get_cached()["power"] == 200
 
 
-def test_cache_ignores_non_numeric_values():
-    """Nur numerische Werte sollen gecached werden."""
+def test_cache_stores_all_value_types():
+    """Alle Werttypen (numerisch, string, None) sollen gecached werden."""
     cache = CacheLayer(enabled=True)
-    cache.update(
-        {
-            "power": 100,
-            "status": "online",
-            "mode": None,
-        }
-    )
+    data = {
+        "power": 100,
+        "status": "online",
+        "mode": None,
+    }
+    cache.update(data)
     result = cache.get_cached()
 
-    assert result == {"power": 100}
+    assert result == data
 
 
 def test_cache_respects_max_age():
-    """Cache sollte Werte verwerfen wenn max_age überschritten ist."""
+    """Cache sollte Payload verwerfen wenn max_age überschritten ist."""
     cache = CacheLayer(enabled=True, max_age=1)
     cache.update({"power": 100})
     time.sleep(1.5)
 
-    result = cache.get_cached()
-
-    assert result == {}
-
-
-def test_cache_partial_expiry():
-    """Einträge mit unterschiedlichen Zeitstempeln sollten korrekt gefiltert werden."""
-    cache = CacheLayer(enabled=True, max_age=2)
-    cache.update({"power": 100})
-    time.sleep(1)
-    cache.update({"battery": 50})
-    result = cache.get_cached()
-
-    # Beide noch gültig
-    assert result["power"] == 100
-    assert result["battery"] == 50
+    assert cache.get_cached() == {}
 
 
 def test_cache_get_empty():
     """get_cached() auf frischem Cache gibt leeres Dict zurück."""
     cache = CacheLayer(enabled=True)
+
     assert cache.get_cached() == {}
 
 
-def test_cache_partial_expiry_precise():
-    """Abgelaufene Einträge werden gefiltert, frische nicht."""
-    cache = CacheLayer(enabled=True, max_age=2)
+def test_cache_is_valid_false_when_empty():
+    """is_valid sollte False sein wenn Cache leer ist."""
+    cache = CacheLayer(enabled=True)
 
-    # power: alt (3s) → abgelaufen
-    cache._cache["power"] = (100, time.time() - 3)
-    # battery: frisch → gültig
-    cache._cache["battery"] = (50, time.time())
+    assert cache.is_valid is False
 
-    result = cache.get_cached()
 
-    assert "power" not in result
-    assert result["battery"] == 50
+def test_cache_is_valid_true_after_update():
+    """is_valid sollte True sein nach erfolgreichem update()."""
+    cache = CacheLayer(enabled=True, max_age=30)
+    cache.update({"power": 100})
+
+    assert cache.is_valid is True
+
+
+def test_cache_is_valid_false_after_expiry():
+    """is_valid sollte False sein wenn max_age abgelaufen ist."""
+    cache = CacheLayer(enabled=True, max_age=1)
+    cache.update({"power": 100})
+    time.sleep(1.5)
+
+    assert cache.is_valid is False
+
+
+def test_cache_payload_is_copy():
+    """Nachträgliche Änderungen am Original-Dict sollen Cache nicht beeinflussen."""
+    cache = CacheLayer(enabled=True, max_age=30)
+    data = {"power": 100}
+    cache.update(data)
+
+    data["power"] = 999  # Original mutieren
+
+    assert cache.get_cached()["power"] == 100
