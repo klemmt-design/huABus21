@@ -1,4 +1,4 @@
-# tests\test_main.py
+# tests/test_main.py
 
 """Tests for Main."""
 

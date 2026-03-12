@@ -1,4 +1,4 @@
-# tests\test_slave_detector.py
+# tests/test_slave_detector.py
 
 """Tests for Auto Slave ID Detection."""
 

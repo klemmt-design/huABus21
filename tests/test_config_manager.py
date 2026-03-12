@@ -1,4 +1,4 @@
-# tests\test_config_manager.py
+# tests/test_config_manager.py
 
 """Tests for ConfigManager."""
 
