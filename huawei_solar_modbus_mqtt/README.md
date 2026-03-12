@@ -29,7 +29,6 @@ with automatic Home Assistant discovery.
 
 - **67 Essential Registers** for complete inverter monitoring
 - **Automatic Slave ID Detection** — tries common values (1, 2, 100) automatically
-- **MQTT Heartbeat (optional cache)** — republishes the last valid data between Modbus polling cycles for smoother updates
 - **Total Increasing Filter** — prevents false counter resets, active from first cycle
 - **Intelligent error tracking** with downtime aggregation and recovery logging
 - **MQTT Auto-Discovery** — all entities appear automatically under a single device

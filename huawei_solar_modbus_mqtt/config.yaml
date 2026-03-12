@@ -35,8 +35,6 @@ options:
   log_level: "INFO"
   status_timeout: 180
   poll_interval: 30
-  enable_caching: false
-  cache_max_age: 40
 schema:
   modbus_host: str
   modbus_port: port
@@ -50,5 +48,3 @@ schema:
   log_level: list(TRACE|DEBUG|INFO|WARNING|ERROR)
   status_timeout: int(30,600)
   poll_interval: int(10,300)
-  enable_caching: bool
-  cache_max_age: int(10,300)?

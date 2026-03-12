@@ -31,15 +31,6 @@
 >
 > Multiple connections cause **timeouts and data loss**!
 
-💡 **Why is there a poll interval?**
-
-Huawei inverters allow only relatively slow Modbus polling for stability
-(typically around 20-30 seconds). This addon can optionally enable an
-MQTT cache that republishes the last valid sensor values between two
-poll cycles, keeping Home Assistant sensors updated continuously.
-
-![Polling and MQTT cache flow](images/cache_flow.svg)
-
 ## 🔌 Compatible Inverters
 
 ### ✅ Fully Supported
@@ -74,7 +65,6 @@ _Missing registers (battery/meter) are handled gracefully - your inverter will w
 ## Features
 
 - **Automatic Slave ID Detection:** No more guessing! Tries common values (1, 2, 100) automatically
-- **MQTT Heartbeat (optional cache):** Republishes the last valid data between Modbus polling cycles for smoother updates
 - **Modbus TCP → MQTT:** 69+ entities with Auto-Discovery
 - **Complete Monitoring:** Battery, PV (1-4), Grid (3-phase), Energy counters
 - **Total Increasing Filter:** Prevents false counter resets in energy statistics
@@ -181,8 +171,6 @@ Configure via Home Assistant UI with translated field names:
 - **Log Level:** `TRACE` | `DEBUG` | `INFO` (recommended) | `WARNING` | `ERROR`
 - **Status Timeout:** Default: `180s` (range: 30-600)
 - **Poll Interval:** Default: `30s` (range: 10-300, recommended: 30-60s)
-- **Enable Caching:** Default `false` — republishes cached data between Modbus polls
-- **Cache Max Age:** Default `30s` — maximum lifetime of cached values
 
 **💡 Pro Tip:** Leave MQTT credentials empty - the addon automatically uses Home Assistant MQTT Service settings!
 
@@ -233,9 +221,7 @@ See [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md) for detailed release n
 
 **v1.9.0 Highlights (Mar 2026):**
 
-- ⚡ **Optional MQTT Heartbeat Cache:** Smooth 1-second sensor updates between Modbus polls
 - 🔌 **Better EVCC Compatibility:** Stable power readings for energy management systems
-- 🧠 **Improved MQTT Payload Consistency:** Simplified cache implementation
 
 **Previous releases:**
 

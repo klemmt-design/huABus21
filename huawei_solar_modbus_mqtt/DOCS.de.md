@@ -21,19 +21,6 @@ Liest Daten deines Huawei Wechselrichters per Modbus TCP aus und veröffentlicht
 >
 > **Regel:** Nur EINE Modbus-Verbindung = stabiles System ✅
 
-💡 **Warum gibt es ein Poll-Intervall?**
-
-Huawei-Wechselrichter erlauben aus Stabilitätsgründen nur relativ langsames
-Modbus-Polling (typisch **20-30 Sekunden**). Häufigere Abfragen können zu
-Timeouts oder instabilen Verbindungen führen.
-
-huABus kann optional einen **MQTT-Cache (Heartbeat)** aktivieren. Dieser
-veröffentlicht zwischen zwei Modbus-Abfragen erneut die zuletzt gültigen
-Messwerte. Dadurch bleiben Sensoren in Home Assistant kontinuierlich
-aktualisiert, auch wenn das Poll-Intervall länger ist.
-
-![Polling und MQTT-Cache Ablauf](../images/cache_flow.svg)
-
 ## 🚀 Schnellstart
 
 ### 1. Installation
@@ -85,7 +72,6 @@ INFO - 📊 Published - PV: 4500W | AC Out: 4200W | ...
 ## Funktionen
 
 - **Automatische Slave ID-Erkennung:** Probiert automatisch gängige Werte (0, 1, 2, 100)
-- **Optionaler MQTT-Heartbeat Cache:** Veröffentlicht zwischen zwei Modbus-Abfragen erneut die letzten gültigen Werte
   - hält Home Assistant Sensoren kontinuierlich aktualisiert
   - verbessert die Kompatibilität mit Energiemanagement-Systemen (z.B. EVCC)
   - vollständig optional aktivierbar
@@ -134,15 +120,6 @@ INFO - 📊 Published - PV: 4500W | AC Out: 4200W | ...
 - **status_timeout** (Standard: `180s`, Range: 30-600): Offline-Timeout
 - **poll_interval** (Standard: `30s`, Range: 10-300): Abfrageintervall für Modbus
   - Empfohlen: **30-60s** für stabile Verbindungen
-
-  Wenn Caching aktiviert ist, können MQTT-Updates trotzdem häufiger erfolgen,
-  da zwischen zwei Poll-Zyklen die letzten gültigen Werte erneut veröffentlicht werden.
-
-- **enable_caching** (Standard: `false`):
-  Veröffentlicht zwischen zwei Modbus-Abfragen erneut die zuletzt gültigen Sensorwerte.
-
-- **cache_max_age** (Standard: `40s`):
-  Maximales Alter eines Cache-Wertes bevor er verworfen wird.
 
 ## MQTT Topics
 

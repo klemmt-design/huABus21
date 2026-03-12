@@ -30,15 +30,13 @@ setup() {
         "log_level") echo "INFO" ;;
         "status_timeout") echo "180" ;;
         "poll_interval") echo "30" ;;
-        "enable_caching") echo "true" ;;
-        "cache_max_age") echo "30" ;;
         *) echo "${2:-}" ;;
         esac
     }
 
     bashio::config.has_value() {
         case "$1" in
-        "modbus_host" | "modbus_port" | "modbus_auto_detect_slave_id" | "slave_id" | "mqtt_topic" | "log_level" | "status_timeout" | "poll_interval" | "enable_caching" | "cache_max_age")
+        "modbus_host" | "modbus_port" | "modbus_auto_detect_slave_id" | "slave_id" | "mqtt_topic" | "log_level" | "status_timeout" | "poll_interval")
             return 0
             ;;
         *)
@@ -103,8 +101,6 @@ teardown() {
     unset HUAWEI_STATUS_TIMEOUT
     unset HUAWEI_POLL_INTERVAL
     unset HUAWEI_LOG_LEVEL
-    unset HUAWEI_ENABLE_CACHING
-    unset HUAWEI_CACHE_MAX_AGE
 }
 
 @test "get_required_config returns value when config exists" {
@@ -256,41 +252,4 @@ teardown() {
 
     [ "$HUAWEI_MODBUS_AUTO_DETECT_SLAVE_ID" = "false" ]
     [ "$HUAWEI_SLAVE_ID" = "5" ]
-}
-
-@test "Caching environment variables are exported correctly" {
-    source huawei_solar_modbus_mqtt/run.sh >/dev/null 2>&1
-
-    [ "$HUAWEI_ENABLE_CACHING" = "true" ]
-    [ "$HUAWEI_CACHE_MAX_AGE" = "30" ]
-}
-
-@test "Caching enabled from config" {
-    bashio::config() {
-        case "$1" in
-        modbus_host) echo '192.168.1.100' ;;
-        modbus_port) echo '502' ;;
-        modbus_auto_detect_slave_id) echo 'true' ;;
-        slave_id) echo '1' ;;
-        mqtt_host) echo 'core-mosquitto' ;;
-        mqtt_port) echo '1883' ;;
-        mqtt_user) echo '' ;;
-        mqtt_password) echo '' ;;
-        mqtt_topic) echo 'huawei-solar' ;;
-        log_level) echo 'INFO' ;;
-        status_timeout) echo '180' ;;
-        poll_interval) echo '30' ;;
-        enable_caching) echo 'true' ;;
-        cache_max_age) echo '40' ;;
-        *) echo '' ;;
-        esac
-    }
-    export -f bashio::config
-    # has_value vom setup() bleibt — mqtt_host ist dort NICHT drin → HA-Service-Pfad
-    # Das ist korrekt für diesen Test, wir testen nur Caching!
-
-    source huawei_solar_modbus_mqtt/run.sh >/dev/null 2>&1
-
-    [ "$HUAWEI_ENABLE_CACHING" = "true" ]
-    [ "$HUAWEI_CACHE_MAX_AGE" = "40" ]
 }

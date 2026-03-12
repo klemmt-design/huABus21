@@ -31,15 +31,6 @@
 >
 > Mehrere Verbindungen führen zu **Timeouts und Datenverlust**!
 
-💡 **Warum gibt es ein Poll-Intervall?**
-
-Huawei-Wechselrichter erlauben aus Stabilitätsgründen nur relativ langsames Modbus-Polling
-(typisch 20-30 Sekunden). Dieses Addon kann optional einen MQTT-Cache aktivieren, der
-zwischen zwei Abfragen die letzten Messwerte erneut veröffentlicht, damit Sensoren
-in Home Assistant kontinuierlich aktualisiert bleiben.
-
-![Polling und MQTT-Cache Ablauf](images/cache_flow.svg)
-
 ## 🔌 Kompatible Wechselrichter
 
 ### ✅ Vollständig unterstützt
@@ -181,8 +172,6 @@ Konfiguration über Home Assistant UI mit deutschen Feldnamen:
 - **Log-Level:** `TRACE` | `DEBUG` | `INFO` (empfohlen) | `WARNING` | `ERROR`
 - **Status Timeout:** Standard: `180s` (Range: 30-600)
 - **Abfrageintervall:** Standard: `30s` (Range: 10-300, empfohlen: 30-60s)
-- **Caching aktivieren:** Standard `false` — veröffentlicht zwischen zwei Modbus-Abfragen erneut die letzten Messwerte
-- **Cache Max Age:** Standard `30s` — maximale Lebensdauer eines Cache-Wertes
 
 **💡 Pro-Tipp:** Lass MQTT-Zugangsdaten leer - das Addon nutzt automatisch die Home Assistant MQTT Service-Einstellungen!
 
@@ -233,9 +222,7 @@ Siehe [CHANGELOG.md](huawei_solar_modbus_mqtt/CHANGELOG.md) für detaillierte Re
 
 **v1.9.0 Highlights (März 2026):**
 
-- ⚡ **Optionaler MQTT-Heartbeat Cache:** stabile 1-Sekunden Updates zwischen Modbus-Abfragen
 - 🔌 **Verbesserte EVCC-Kompatibilität:** stabilere Leistungswerte für Energiemanagement-Systeme
-- 🧠 **Vereinfachte MQTT-Payload-Konsistenz:** robuster Cache-Layer
 
 **Frühere Releases:**
 

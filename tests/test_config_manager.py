@@ -235,20 +235,6 @@ class TestConfigManagerValidation:
         errors = config.validate()
         assert any("log_level" in err for err in errors)
 
-    def test_validate_cache_max_age_edge_cases(self, tmp_path):
-        """Test new caching validation."""
-        config_file = tmp_path / "options.json"
-        config_data = {
-            "enable_caching": True,
-            "cache_max_age": 5,  # < 10
-            "poll_interval": 20,
-            # ... required fields
-        }
-        config_file.write_text(json.dumps(config_data))
-        config = ConfigManager(config_path=config_file)
-        errors = config.validate()
-        assert any("10-300s" in e for e in errors)
-
 
 class TestConfigManagerEnvParsing:
     """Test environment variable parsing helpers."""

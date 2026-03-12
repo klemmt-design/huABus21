@@ -21,18 +21,6 @@ Reads data from your Huawei inverter via Modbus TCP and publishes it via MQTT wi
 >
 > **Rule:** Only ONE Modbus connection = stable system ✅
 
-💡 **Why is there a poll interval?**
-
-Huawei inverters allow only relatively slow Modbus polling for stability
-(typically around **20–30 seconds**). Polling faster can lead to timeouts
-or unstable connections.
-
-huABus can optionally enable an **MQTT cache (heartbeat)** that republishes
-the last valid sensor values between two Modbus polls. This keeps sensors
-in Home Assistant updated continuously even with longer poll intervals.
-
-![Polling and MQTT cache flow](../images/cache_flow.svg)
-
 ## 🚀 Quick Start
 
 ### 1. Installation
@@ -84,7 +72,6 @@ INFO - 📊 Published - PV: 4500W | AC Out: 4200W | ...
 ## Features
 
 - **Automatic Slave ID Detection:** Tries common values (0, 1, 2, 100) automatically
-- **Optional MQTT Heartbeat Cache**
 - **Auto MQTT Configuration:** Uses Home Assistant MQTT Service credentials automatically
 - **Fast Modbus TCP connection** (58 essential registers, 2-5s cycle time)
 - **total_increasing Filter:** Prevents false counter resets
@@ -130,15 +117,6 @@ INFO - 📊 Published - PV: 4500W | AC Out: 4200W | ...
 - **status_timeout** (default: `180s`, range: 30-600): Offline timeout
 - **poll_interval** (default: `30s`, range: 10-300): Modbus query interval  
   Recommended: **30-60s** for optimal stability
-
-  When caching is enabled, MQTT updates can still occur more frequently
-  using the last valid values.
-
-- **enable_caching** (default: `false`):
-  Republishes the last valid sensor values between Modbus polls.
-
-- **cache_max_age** (default: `40s`):
-  Maximum age of cached values before they expire.
 
 ## MQTT Topics
 

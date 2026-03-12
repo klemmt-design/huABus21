@@ -109,13 +109,6 @@ export HUAWEI_LOG_LEVEL
 
 echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO: >> Log level: ${HUAWEI_LOG_LEVEL}"
 
-# Caching
-HUAWEI_ENABLE_CACHING=$(get_required_config 'enable_caching' 'false')
-export HUAWEI_ENABLE_CACHING
-
-HUAWEI_CACHE_MAX_AGE=$(get_required_config 'cache_max_age' '30')
-export HUAWEI_CACHE_MAX_AGE
-
 # Set bashio log level to match
 case "${HUAWEI_LOG_LEVEL}" in
     TRACE)
@@ -167,13 +160,6 @@ fi
 
 echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO:  📍 Topic: ${HUAWEI_MQTT_TOPIC}"
 echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO:  ⏱️ Poll: ${HUAWEI_POLL_INTERVAL}s | Timeout: ${HUAWEI_STATUS_TIMEOUT}s"
-
-# Caching
-if [ "${HUAWEI_ENABLE_CACHING}" = "true" ]; then
-    echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO:  💾 Cache: enabled (max_age=${HUAWEI_CACHE_MAX_AGE}s, MQTT heartbeat every second)"
-else
-    echo "$(date +"%Y-%m-%dT%H:%M:%S") INFO:  💾 Cache: disabled"
-fi
 
 echo "[$(date +'%T')] INFO: ----------------------------------------------------------"
 

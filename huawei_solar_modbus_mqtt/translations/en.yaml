@@ -56,11 +56,3 @@ configuration:
   poll_interval:
     name: Poll Interval
     description: Interval in seconds between Modbus queries from the inverter. Recommended 30-60s for optimal balance between freshness and network load
-
-  enable_caching:
-    name: Enable Caching
-    description: Repeats data between polls every second (useful for native MQTT connectivity, e.g. EVCC via MQTT) - avoids data gaps
-
-  cache_max_age:
-    name: Cache Max Age
-    description: "Recommend interval: Poll Interval + 10 seconds, otherwise data gaps"

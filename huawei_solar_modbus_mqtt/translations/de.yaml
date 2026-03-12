@@ -56,11 +56,3 @@ configuration:
   poll_interval:
     name: Abfrageintervall
     description: Intervall in Sekunden zwischen Modbus-Abfragen vom Wechselrichter. Empfohlen 30-60s für optimale Balance zwischen Aktualität und Netzwerklast
-
-  enable_caching:
-    name: Caching aktivieren
-    description: Wiederholt Daten sekündlich zwischen Polls (nützlich für native MQTT-Anbindung, z.B. EVCC via MQTT) - vermeidet Datenlücken
-
-  cache_max_age:
-    name: Cache Lebensdauer
-    description: "Empfohlenes Intervall: Abfrageintervall + 10 Sekunden, sonst entstehen Datenlücken"
