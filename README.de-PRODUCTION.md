@@ -104,7 +104,7 @@ capacity: 10
 | Externe Integrationen   | Begrenzt                            | ✅ (EVCC, Node-RED, Grafana)  |
 | Error Tracking          | Basis                               | Advanced                      |
 
-Beide teilen die gleiche Limitierung – nur **EINE Modbus-Verbindung**. Für gleichzeitige Nutzung wird ein Modbus Proxy benötigt.
+Beide teilen die gleiche Limitierung - nur **EINE Modbus-Verbindung**. Für gleichzeitige Nutzung wird ein Modbus Proxy benötigt.
 
 ## Screenshots
 
