@@ -311,7 +311,7 @@ def _build_sensor_config(sensor: dict[str, Any], base_topic: str, device_config:
     # Basis-Config (Pflichtfelder)
     config = {
         "name": sensor["name"],
-        "unique_id": f"huawei_solar_{sensor['key']}",
+        "unique_id": f"huawei_solar21_{sensor['key']}",
         "state_topic": base_topic,
         # value_template: Extrahiert Wert aus JSON-Payload
         # Default: {{ value_json.key_name }}
@@ -416,7 +416,7 @@ def _publish_sensor_configs(
         # Config für diesen Sensor erstellen
         config = _build_sensor_config(sensor, base_topic, device_config)
         # Discovery-Topic: homeassistant/sensor/{device}/{entity}/config
-        topic = f"homeassistant/sensor/huawei_solar/{sensor['key']}/config"
+        topic = f"homeassistant/sensor/huawei_solar21/{sensor['key']}/config"
         # Config als JSON publizieren (QoS=1, retain=True)
         result = client.publish(topic, json.dumps(config), qos=1, retain=True)
         # Auf Publish-Bestätigung warten (verhindert Race-Conditions)
@@ -466,8 +466,8 @@ def publish_discovery_configs(base_topic: str) -> None:
     # Device-Config für HA Gruppierung
     # Alle Sensoren erscheinen unter diesem Device in HA UI
     device_config = {
-        "identifiers": ["huawei_solar_modbus"],  # Eindeutige Device-ID
-        "name": "Huawei Solar Inverter",  # Anzeigename
+        "identifiers": ["huawei_solar_modbus21"],  # Eindeutige Device-ID
+        "name": "Huawei Solar Inverter21",  # Anzeigename
         "model": "SUN2000",  # Modell
         "manufacturer": "Huawei",  # Hersteller
     }
@@ -519,7 +519,7 @@ def _publish_status_sensor(client: mqtt.Client, base_topic: str, device_config: 
     """
     config = {
         "name": "Huawei Solar Status",
-        "unique_id": "huawei_solar_status",
+        "unique_id": "huawei_solar21_status",
         "state_topic": f"{base_topic}/status",
         "payload_on": "online",  # Sensor ist ON wenn "online"
         "payload_off": "offline",  # Sensor ist OFF wenn "offline"
